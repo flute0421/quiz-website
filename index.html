@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2桁＋2桁</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 10px 20px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+     <style>
+        /* CSSをここに書く */
+         input[type="number"] {
+             -moz-appearance: textfield; /* Firefox用 */
+            -webkit-appearance: textfield; /* Chrome, Safari用 */
+             appearance: textfield; /* 標準プロパティ */
+        }
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none; /* スピンボタンを非表示 */
+            margin: 0;
+        }
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>2桁＋2桁</h1>
+    <button id="start-btn">スタート</button>
+    <button id="reset-btn" class="hidden">リセット</button>
+    <p id="timer">残り時間: <span id="time-left">60</span> 秒</p>
+    <p id="score-display">正解数: 0 / 0 (正答率: 0%)</p>
+    <table>
+        <thead>
+            <tr>
+                <th>問題</th>
+                <th>入力</th>
+                <th>答え</th>
+                <th>結果</th>
+            </tr>
+        </thead>
+        <tbody id="quiz-body">
+        </tbody>
+    </table>
+    <script>
+        let timer;
+        let timeLeft = 60; // 初期制限時間を60秒に設定
+        let score = 0; // 正解数
+        let attempts = 0; // 回答数
+        const quizBody = document.getElementById("quiz-body");
+
+        document.getElementById("start-btn").addEventListener("click", startQuiz);
+        document.getElementById("reset-btn").addEventListener("click", resetQuiz);
+
+        function startQuiz() {
+            timeLeft = 60; // スタート時の時間を60秒に設定
+            score = 0;
+            attempts = 0;
+            updateScoreDisplay();
+            document.getElementById("time-left").innerText = timeLeft;
+            document.getElementById("start-btn").classList.add("hidden");
+            document.getElementById("reset-btn").classList.remove("hidden");
+            generateQuestion();
+
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById("time-left").innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    alert("時間切れ！クイズ終了です。");
+                }
+            }, 1000);
+        }
+
+        function resetQuiz() {
+            clearInterval(timer);
+            timeLeft = 0;
+            score = 0;
+            attempts = 0;
+            updateScoreDisplay();
+            document.getElementById("time-left").innerText = "60";
+            document.getElementById("start-btn").classList.remove("hidden");
+            document.getElementById("reset-btn").classList.add("hidden");
+            quizBody.innerHTML = "";
+        }
+
+        function generateQuestion() {
+            quizBody.innerHTML = ""; // 前の問題をクリア
+            const row = document.createElement("tr");
+            const questionCell = document.createElement("td");
+            const inputCell = document.createElement("td");
+            const answerCell = document.createElement("td");
+            const resultCell = document.createElement("td");
+
+            // 問題の数字を生成
+            const num1 = Math.floor(Math.random() * (99 - 10 + 1)) + 10; // 10～99
+            const num2 = Math.floor(Math.random() * (99 - 10 + 1)) + 10; // 10～99
+            const correctAnswer = num1 + num2;
+
+            questionCell.innerText = `${num1} + ${num2}`;
+            const inputField = document.createElement("input");
+            inputField.type = "number";
+            inputField.addEventListener("change", () => {
+                const userAnswer = parseInt(inputField.value);
+                attempts++;
+                if (userAnswer === correctAnswer) {
+                    score++;
+                    resultCell.innerText = "正解";
+                    resultCell.style.color = "green";
+                } else {
+                    resultCell.innerText = "不正解";
+                    resultCell.style.color = "red";
+                }
+                answerCell.innerText = correctAnswer;
+                inputField.disabled = true;
+                updateScoreDisplay();
+
+                // 0.2秒後に次の問題を表示
+                setTimeout(() => {
+                    if (timeLeft > 0) {
+                        generateQuestion();
+                    }
+                }, 200);
+            });
+
+            inputCell.appendChild(inputField);
+            row.appendChild(questionCell);
+            row.appendChild(inputCell);
+            row.appendChild(answerCell);
+            row.appendChild(resultCell);
+            quizBody.appendChild(row);
+
+            // 入力欄を自動的にフォーカス
+            inputField.focus();
+        }
+
+        function updateScoreDisplay() {
+            const accuracy = attempts > 0 ? ((score / attempts) * 100).toFixed(2) : 0;
+            document.getElementById("score-display").innerText =
+                `正解数: ${score} / ${attempts} (正答率: ${accuracy}%)`;
+        }
+    </script>
+</body>
+</html>
